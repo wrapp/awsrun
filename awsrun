@@ -1,0 +1,33 @@
+#!/usr/bin/env python
+
+''' awsrun - Run command with aws credentials exported to ENV.
+
+awsrun will search your ~/.boto file for AWS credentials associated with the
+given profile. It will then run the specified command with the AWS credentials
+available as environment variables.
+
+Usage:
+    awsrun <profile-name> <cmd> <args ...>
+
+Example:
+    awsrun my-profile env | grep AWS
+
+'''
+
+import ConfigParser
+import os
+import sys
+
+if len(sys.argv) < 3:
+    print sys.modules[__name__].__doc__.lstrip()
+    sys.exit(-1)
+
+profile_name = sys.argv[1]
+section = 'profile ' + profile_name
+
+config = ConfigParser.ConfigParser()
+config.read(os.path.expanduser('~/.boto'))
+os.environ['AWS_ACCESS_KEY_ID'] = config.get(section, 'aws_access_key_id')
+os.environ['AWS_SECRET_ACCESS_KEY'] = config.get(section, 'aws_secret_access_key')
+
+os.execvp(sys.argv[2], sys.argv[2:])
